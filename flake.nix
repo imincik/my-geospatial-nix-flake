@@ -12,6 +12,12 @@
 
   inputs = {
     geonix.url = "github:imincik/geospatial-nix";
+
+    nixgl = {
+      url = "github:nix-community/nixGL";
+      inputs.nixpkgs.follows = "geonix/nixpkgs";
+    };
+
     nixpkgs.follows = "geonix/nixpkgs";
   };
 
@@ -22,6 +28,7 @@
 
       perSystem = { config, self', inputs', pkgs, system, ... }: {
 
+        # packages
         packages =
           let
             geopkgs = inputs.geonix.packages.${system};
@@ -34,7 +41,17 @@
                 geopkgs.python3-fiona
               ];
             });
+
+            nixGLIntel = inputs.nixgl.packages.${system}.nixGLIntel;
           };
+
+        # shell environments
+        devShells.default = pkgs.mkShell {
+          nativeBuildInputs = with self'.packages; [
+            qgis
+            nixGLIntel
+          ];
+        };
       };
 
       flake = { };
